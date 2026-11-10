@@ -4,11 +4,10 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public API Routes
 Route::post('/register', [AuthController::class, 'register']);
+
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public Sample Routes
 Route::get('/sample', function () {
     return response()->json([
         'message' => 'This is a sample route.',
@@ -21,7 +20,6 @@ Route::get('/hello', function () {
     ]);
 });
 
-// Authenticated Routes
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user', function (Request $request) {
@@ -39,10 +37,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-// Admin Only Routes
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin,student'])
+    ->get('/students', function (Request $request) {
+        return response()->json([
+            'message' => 'Students list accessed successfully.',
+            'user' => $request->user()->only([
+                'id',
+                'name',
+                'email',
+                'role',
+            ]),
+        ]);
+    });
 
-    Route::get('/admin/dashboard', function (Request $request) {
+Route::middleware(['auth:sanctum', 'admin'])
+    ->get('/admin/dashboard', function (Request $request) {
         return response()->json([
             'message' => 'Welcome Admin!',
             'user' => $request->user()->only([
@@ -54,12 +63,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         ]);
     });
 
-});
-
-// Student Only Routes
-Route::middleware(['auth:sanctum', 'role:student'])->group(function () {
-
-    Route::get('/student/dashboard', function (Request $request) {
+Route::middleware(['auth:sanctum', 'role:student'])
+    ->get('/student/dashboard', function (Request $request) {
         return response()->json([
             'message' => 'Welcome Student!',
             'user' => $request->user()->only([
@@ -70,5 +75,3 @@ Route::middleware(['auth:sanctum', 'role:student'])->group(function () {
             ]),
         ]);
     });
-
-});
